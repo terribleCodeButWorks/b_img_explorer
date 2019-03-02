@@ -90,9 +90,8 @@ window.onscroll = () => {
   if (!counter.couldBeginNewTask()) {
     return
   }
-  let fourthLatestImg = Gallery.lastChild.previousElementSibling.previousElementSibling.previousElementSibling // earlier fetching for better UX
-  let fourthLatestPage = fourthLatestImg.className.split("_")[1]
-  if (fourthLatestImg.getBoundingClientRect().top < window.screen.height) { // when 4th latest image appear in screen
+  let theLatest = Gallery.lastChild
+  if (theLatest.getBoundingClientRect().top - window.screen.height < 5000) { // when latest image near screen
     fetchData()
   }
 }
