@@ -35,11 +35,12 @@ var header = {
 };
 
 let CurrentPage = 0
+let LatestPage = 0
 
 async function fetchData() {
-  CurrentPage += 1
+  let p = CurrentPage += 1
   LoadingStatus.innerHTML = 'Fetching...'
-  await fetch(makeURL(CurrentPage), header)
+  await fetch(makeURL(p), header)
     .then(function(r) {
       return r.json()
     })
@@ -48,29 +49,33 @@ async function fetchData() {
       result.forEach((a) => {
         if (!!a.lb2) {
           let src = "data:" + a.s3 + ";base64, " + a.lb2
-          let e = makeElement(a.s3, src)
+          let e = makeElement(a.s3, src, p)
 
           Gallery.insertAdjacentHTML('beforeend', e)
         }
       })
     })
+  LatestPage += 1
 
   LoadingStatus.innerHTML = 'Done:)'
 }
 
-function makeElement(type, src) {
-  if (type === 'text/javascript' || type == 'text/html') {
-    return '<pre>javascript or html data</pre>'
+function makeElement(type, src, page) {
+  if (type === 'image/svg+xml') { // can not render svg correctly now
+    return '<embed class="page_' + page + '" width="100%" >'
   }
-  let e = '<embed class="page_' + CurrentPage + '" src="' + src + '" width="100%" >'
+  let e = '<embed class="page_' + page + '" src="' + src + '" width="100%" >'
   return e
 }
 
 window.onscroll = () => {
-  let secondLatestImg = Gallery.lastChild.previousElementSibling
-  if (secondLatestImg.className === 'page_' + CurrentPage) { // 2nd latest fetching done
+  let secondLatestImg = Gallery.lastChild.previousElementSibling.previousElementSibling.previousElementSibling// earlier fetching for better UX
+  let secondLatestPage = secondLatestImg.className.split("_")[1]
+  if (secondLatestPage <= CurrentPage) { // 2nd latest fetching done
     if (secondLatestImg.getBoundingClientRect().top < window.screen.height) { // when 2nd latest image appear in screen
-      fetchData()
+      if (CurrentPage - LatestPage < 10) { // max pending fetch is 10
+        fetchData()
+      }
     }
   }
 }
