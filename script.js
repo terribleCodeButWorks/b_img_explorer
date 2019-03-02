@@ -34,11 +34,29 @@ var header = {
   }
 };
 
-let CurrentPage = 0
-let LatestPage = 0
+class Counter {
+  constructor() {
+    this.started = 0
+    this.done = 0
+  }
+
+  newTask() {
+    return this.started += N_PER_PAGE
+  }
+
+  taskDown() {
+    return this.done += N_PER_PAGE
+  }
+
+  couldBeginNewTask() {
+    return (this.done >= 5) && (this.started - this.done < 5) // pending tasks less than 5
+  }
+}
+let counter = new Counter()
 
 async function fetchData() {
-  let p = CurrentPage += 1
+  let p = counter.newTask()
+  console.log(p)
   LoadingStatus.innerHTML = 'Fetching...'
   await fetch(makeURL(p), header)
     .then(function(r) {
@@ -55,7 +73,7 @@ async function fetchData() {
         }
       })
     })
-  LatestPage += 1
+  counter.taskDown()
 
   LoadingStatus.innerHTML = 'Done:)'
 }
@@ -69,18 +87,18 @@ function makeElement(type, src, page) {
 }
 
 window.onscroll = () => {
-  let secondLatestImg = Gallery.lastChild.previousElementSibling.previousElementSibling.previousElementSibling// earlier fetching for better UX
-  let secondLatestPage = secondLatestImg.className.split("_")[1]
-  if (secondLatestPage <= CurrentPage) { // 2nd latest fetching done
-    if (secondLatestImg.getBoundingClientRect().top < window.screen.height) { // when 2nd latest image appear in screen
-      if (CurrentPage - LatestPage < 10) { // max pending fetch is 10
-        fetchData()
-      }
-    }
+  if (!counter.couldBeginNewTask()) {
+    return
+  }
+  let fourthLatestImg = Gallery.lastChild.previousElementSibling.previousElementSibling.previousElementSibling // earlier fetching for better UX
+  let fourthLatestPage = fourthLatestImg.className.split("_")[1]
+  if (fourthLatestImg.getBoundingClientRect().top < window.screen.height) { // when 4th latest image appear in screen
+    fetchData()
   }
 }
 
 let main = async function() {
+  await fetchData()
   await fetchData()
   await fetchData()
 }
