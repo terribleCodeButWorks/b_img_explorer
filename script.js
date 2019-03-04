@@ -9,7 +9,7 @@ const makeQuery = (pageNumber, nPerPage) => {
         }
       },
       "skip": pageNumber > 0 ? ((pageNumber - 1) * nPerPage) : 0,
-      "limit": 2
+      "limit": nPerPage
     },
     "r": {
       "f": "[.[] | { lb2: .out[0].lb2, s3: .out[0].s3 }]"
